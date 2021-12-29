@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "VaultDemo.Api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Vault__SecretValue": "aspnet6-dev"
+      },
+      "applicationUrl": "http://localhost:5127",
+      "dotnetRunMessages": true
+    }
+  }
+}

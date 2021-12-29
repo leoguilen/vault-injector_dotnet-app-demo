@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-demo
+  labels:
+    app: vault-demo
+spec:
+  selector:
+    matchLabels:
+      app: vault-demo
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "internal-app"
+        vault.hashicorp.com/agent-pre-populate-only: "true"
+        vault.hashicorp.com/agent-inject-secret-app-config: "internal/data/app/config"
+        vault.hashicorp.com/agent-inject-template-app-config: |
+          {{ with secret "internal/data/app/config" -}}
+            export VAULT__SECRETVALUE="{{ .Data.data.VAULT__SECRETVALUE }}"
+          {{- end }}
+      labels:
+        app: vault-demo
+    spec:
+      serviceAccountName: internal-app
+      containers:
+        - name: vault-demo-app
+          image: lguilen/vault-demo-app:latest
+          command: ["/bin/sh"]
+          args:
+            [
+              "-c",
+              "source /vault/secrets/app-config && dotnet VaultDemo.Api.dll --environment=VAULT__SECRETVALUE",
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-demo-svc
+spec:
+  selector:
+    app: vault-demo
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 80
